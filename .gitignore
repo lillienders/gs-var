@@ -1,3 +1,8 @@
 # Ignore all NetCDF files
 *.nc
 
+# Ignore contents of figures/lead_lags/
+figures/lead_lags/
+
+# But keep everything else in figures/
+!figures/
