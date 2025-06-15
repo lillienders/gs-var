@@ -441,3 +441,39 @@ def is_summer(month):
     return (month >= 7) & (month <= 9)
 def is_fall(month):
     return (month >= 10) & (month <= 12)
+
+def linregress_at_point(var_one, var_two):
+    if np.all(np.isnan(var_two)):  # Handle missing data
+        return np.nan, np.nan, np.nan, np.nan, np.nan
+    slope, intercept, r_value, p_value, std_err = linregress(var_one, var_two)
+    return slope, intercept, r_value**2, p_value, std_err
+
+def linregress_spatial(var_one, var_two):
+    results = xr.apply_ufunc(
+        linregress_at_point,
+        var_one,    # (time,)
+        var_two,    # (time, lat, lon)
+        input_core_dims  = [['time'], ['time']],  # Apply along time axis
+        output_core_dims = [[], [], [], [], []],  # Scalar outputs per point
+        vectorize = True,  # Apply function element-wise
+        dask = 'parallelized',  # Enables parallel computation if using Dask
+        output_dtypes = [np.float64, np.float64, np.float64, np.float64, np.float64]
+    )
+    
+    slope, intercept, r_squared, p_value, std_err = results
+    slope     = xr.DataArray(slope,     dims=('latitude', 'longitude'), coords={'latitude': var_two.latitude, 'longitude': var_two.longitude})
+    intercept = xr.DataArray(intercept, dims=('latitude', 'longitude'), coords={'latitude': var_two.latitude, 'longitude': var_two.longitude})
+    r_squared = xr.DataArray(r_squared, dims=('latitude', 'longitude'), coords={'latitude': var_two.latitude, 'longitude': var_two.longitude})
+    p_value   = xr.DataArray(p_value,   dims=('latitude', 'longitude'), coords={'latitude': var_two.latitude, 'longitude': var_two.longitude})
+    std_err   = xr.DataArray(std_err,   dims=('latitude', 'longitude'), coords={'latitude': var_two.latitude, 'longitude': var_two.longitude})
+    
+    regression_results = xr.Dataset(
+        {
+            'slope': slope,
+            'intercept': intercept,
+            'r_squared': r_squared,
+            'p_value': p_value,
+            'std_err': std_err,
+        }
+    )
+    return regression_results
