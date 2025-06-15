@@ -13,57 +13,52 @@ import seaborn as sns
 import cmocean as cmo
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
-def init_orthomap(nrow,ncol,bboxplot,centlon=-40,centlat=35,precision=40,
-                  dx=10,dy=5,
-                  frame_linewidth=2,frame_col="k",
-                  figsize=(16,9),constrained_layout=True,ax=None):
-    # Intiailize Ortograpphic map over North Atlantic.
-    # Based on : https://stackoverflow.com/questions/74124975/cartopy-fancy-box
-    # The default lat/lon projection
+def init_orthomap(nrow=1, ncol=1, bboxplot=None, centlon=-40, centlat=35, precision=40,
+                  dx=10, dy=5, frame_linewidth=2, frame_col="k",
+                  figsize=(16,9), constrained_layout=True, ax=None):
+    # Default lat/lon projection
     noProj = ccrs.PlateCarree(central_longitude=0)
     
-    # Set Orthographic Projection
+    # Set orthographic projection
     myProj = ccrs.Orthographic(central_longitude=centlon, central_latitude=centlat)
-    myProj._threshold = myProj._threshold/precision  #for higher precision plot
-    
-    # Initialize Figure
-    fig,axs = plt.subplots(nrow,ncol,figsize=figsize,subplot_kw={'projection': myProj},
-                          constrained_layout=constrained_layout)
-    
-    # Get Line Coordinates
-    xp,yp  = get_box_coords(bboxplot,dx=dx,dy=dy)
-    
-    # Draw the line
-    if nrow ==1 and ncol ==1:
-        #print("Nd Axis")
-        axs = [axs,]
-        ndaxis=False
+    myProj._threshold = myProj._threshold / precision  # higher resolution
+
+    if ax is not None:
+        # Use existing axis (e.g., from subplot)
+        axs = [ax]
+        fig = ax.figure
     else:
-        orishape = axs.shape
-        axs      = axs.flatten()
-        ndaxis   = True
-    for ax in axs:
-        [ax_hdl] = ax.plot(xp,yp,
-            color=frame_col, linewidth=frame_linewidth,
-            transform=noProj)
-        
-        # Make a polygon and crop
-        tx_path                = ax_hdl._get_transformed_path()
+        # Create new figure/axes
+        fig, axs = plt.subplots(nrow, ncol, figsize=figsize,
+                                subplot_kw={'projection': myProj},
+                                constrained_layout=constrained_layout)
+        if nrow == 1 and ncol == 1:
+            axs = [axs]
+        else:
+            axs = axs.flatten()
+
+    # Get box coordinates
+    xp, yp = get_box_coords(bboxplot, dx=dx, dy=dy)
+
+    for axx in axs:
+        [ax_hdl] = axx.plot(xp, yp,
+                            color=frame_col, linewidth=frame_linewidth,
+                            transform=noProj)
+        # Make polygon and crop map extent
+        tx_path = ax_hdl._get_transformed_path()
         path_in_data_coords, _ = tx_path.get_transformed_path_and_affine()
-        polygon1s              = mpath.Path( path_in_data_coords.vertices)
-        ax.set_boundary(polygon1s) # masks-out unwanted part of the plot
-        
-    if ndaxis is False:
-        axs = axs[0] # Return just the axis
-    else:
-        axs = axs.reshape(orishape)
-    mapdict={
-        'noProj'     : noProj,
-        'myProj'     : myProj,
-        'line_coords': (xp,yp),
-        'polygon'    : polygon1s,
-        }
-    return fig,axs,mapdict
+        polygon1s = mpath.Path(path_in_data_coords.vertices)
+        axx.set_boundary(polygon1s)
+
+    if len(axs) == 1:
+        axs = axs[0]  # Return just axis if single panel
+    mapdict = {
+        'noProj': noProj,
+        'myProj': myProj,
+        'line_coords': (xp, yp),
+        'polygon': polygon1s,
+    }
+    return fig, axs, mapdict
 
 
 def get_box_coords(bbox,dx=None,dy=None):
