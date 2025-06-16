@@ -5,6 +5,7 @@
 figures/lead_lags/
 figures/composites/
 figures/wsc_regs/
+figures/*.gif
 
 # But keep everything else in figures/
 !figures/
