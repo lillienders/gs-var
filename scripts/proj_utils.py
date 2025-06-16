@@ -14,6 +14,7 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 sns.set()
 from scipy.signal import butter, lfilter
 from scipy.interpolate import RegularGridInterpolator
+from scipy.stats import linregress
 
 def rmv_clm(dataset):
     """
