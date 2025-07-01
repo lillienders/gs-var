@@ -6,7 +6,7 @@ import matplotlib.path as mpath
 import netCDF4 as nc
 import xarray as xr
 import warnings
-from eofs.xarray import Eof
+#from eofs.xarray import Eof
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import seaborn as sns
