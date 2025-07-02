@@ -2,6 +2,7 @@
 *.nc
 
 # Ignore contents of figures/ subfolders
+figures/lead_lags_two_layer/
 figures/lead_lags/
 figures/composites/
 figures/wsc_regs/
