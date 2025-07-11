@@ -248,7 +248,8 @@ def get_gsi_lat_lon(field_adt, field_std):
     gsi_lat: 1d array
         array of gsi latitudes 
     """
-    contour_lons, contour_lats = extract_contour_sd(field_adt, get_max_contour(field_adt, field_std)) # Pull latitude and longitude of max std contour
+    #contour_lons, contour_lats = extract_contour_sd(field_adt, get_max_contour(field_adt, field_std)) # Pull latitude and longitude of max std contour
+    contour_lons, contour_lats = extract_contour_sd(field_adt,7) # Pull latitude and longitude of max std contour
     indices_ = []
     for k in np.linspace(290, 305, 16):
         indices_.append(np.nanargmin(abs((contour_lons) - k)))
